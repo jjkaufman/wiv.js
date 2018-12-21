@@ -1,0 +1,15 @@
+body {
+  font-family: Comic Sans MS;
+  background: black;
+  color: white;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  overflow: show;
+}
+
+.center {
+  width: 35em;
+}
