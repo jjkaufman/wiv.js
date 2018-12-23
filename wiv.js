@@ -16,6 +16,7 @@ function initWiv(wiv) {
   canvas.height = wiv.offsetHeight;
   canvas.style.zIndex = 16;
   canvas.style.position = "absolute";
+  canvas.style.pointerEvents ="none";
   wiv.insertBefore(canvas, wiv.firstChild);
 }
 
