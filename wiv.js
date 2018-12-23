@@ -53,7 +53,7 @@ function animateLines() {
     let oY = y;
 
     //draw top
-    for (x = height * 2; x <= wivCurve.width - (height * 3); x += 1) {
+    for (x = height * 3; x <= wivCurve.width - (height * 3); x += 1) {
       y = height - Math.sin(((x - parseFloat(wivCurve.dataset.count)) * tightness) * Math.PI / 180) * height + thickness;
 
       ctx.lineWidth = thickness;
@@ -79,14 +79,23 @@ function animateLines() {
     }
 
 		//draw left
-    for (y = y; y >= (height * 2); y -= 1) {
+    for (y = y; y >= (height * 2) + thickness; y -= 1) {
       x = height - Math.cos(((y - parseFloat(wivCurve.dataset.count)) * tightness) * Math.PI / 180) * height + thickness;
 
       ctx.lineWidth = thickness;
 
       ctx.lineTo(x, y);
     }
-    ctx.lineTo(oX, oY);
+  
+        //draw top
+        for (x = x; x <= wivCurve.width - (height * 3); x += 1) {
+          y = height - Math.sin(((x - parseFloat(wivCurve.dataset.count)) * tightness) * Math.PI / 180) * height + thickness;
+    
+          ctx.lineWidth = thickness;
+    
+          ctx.lineTo(x, y);
+    
+        }
 
 		//pull color from dataset
     ctx.strokeStyle = wivCurve.parentNode.dataset.wivColor != undefined ? wivCurve.parentNode.dataset.wivColor : "#FF0000"
