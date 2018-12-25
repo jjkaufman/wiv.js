@@ -1,9 +1,4 @@
 function initWiv(wiv) {
-  let left = wiv.offsetLeft;
-  let top = wiv.offsetTop;
-  let height = parseFloat(wiv.dataset.wivHeight);
-  let penRadius = parseFloat(wiv.dataset.wivThickness)
-
   //style wiv elements 
   wiv.style.display = "inline-block";
   wiv.style.borderRadius = parseFloat(wiv.dataset.wivHeight) + "px";
@@ -18,6 +13,7 @@ function initWiv(wiv) {
   canvas.style.position = "absolute";
   canvas.style.pointerEvents ="none";
   wiv.insertBefore(canvas, wiv.firstChild);
+  console.log(document.getElementsByClassName("wiv")[1].offsetHeight,"beforeinit")
 }
 
 /**
@@ -27,6 +23,13 @@ function initWivs() {
   var wivs = document.getElementsByClassName("wiv");
   for (i = wivs.length - 1; i >= 0; i--) {
     initWiv(wivs[i]);
+    // resetting the previous' wiv canvas size for responsive views
+    if (i < wivs.length-1) {
+      var canvas = document.getElementsByTagName("canvas")[i+1]
+      canvas.height = wivs[i+1].offsetHeight;
+      canvas.width = wivs[i+1].offsetWidth;
+    }
+    console.log(document.getElementsByClassName("wiv")[1].offsetHeight,"ininit")
   }
 }
 
@@ -114,4 +117,5 @@ function animateLines() {
 }
 //initial wivs and call initial frame render
 initWivs();
+console.log(document.getElementsByClassName("wiv")[1].offsetHeight,"afterinit")
 window.requestAnimationFrame(animateLines);
