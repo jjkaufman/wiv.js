@@ -13,7 +13,6 @@ function initWiv(wiv) {
   canvas.style.position = "absolute";
   canvas.style.pointerEvents ="none";
   wiv.insertBefore(canvas, wiv.firstChild);
-  console.log(document.getElementsByClassName("wiv")[1].offsetHeight,"beforeinit")
 }
 
 /**
@@ -29,7 +28,6 @@ function initWivs() {
       canvas.height = wivs[i+1].offsetHeight;
       canvas.width = wivs[i+1].offsetWidth;
     }
-    console.log(document.getElementsByClassName("wiv")[1].offsetHeight,"ininit")
   }
 }
 
@@ -117,5 +115,4 @@ function animateLines() {
 }
 //initial wivs and call initial frame render
 initWivs();
-console.log(document.getElementsByClassName("wiv")[1].offsetHeight,"afterinit")
 window.requestAnimationFrame(animateLines);
