@@ -22,12 +22,12 @@ function initWivs() {
   var wivs = document.getElementsByClassName("wiv");
   for (i = wivs.length - 1; i >= 0; i--) {
     initWiv(wivs[i]);
-    // resetting the previous' wiv canvas size for responsive views
-    if (i < wivs.length-1) {
-      var canvas = document.getElementsByTagName("canvas")[i+1]
-      canvas.height = wivs[i+1].offsetHeight;
-      canvas.width = wivs[i+1].offsetWidth;
-    }
+  }
+  // reset the previous' wiv canvas size for responsive views
+  for (i = 0; i < wivs.length; i++) {
+    var canvas = document.getElementsByTagName("canvas")[i];
+      canvas.height = wivs[i].offsetHeight;
+      canvas.width = wivs[i].offsetWidth;
   }
 }
 
