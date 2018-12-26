@@ -1,9 +1,4 @@
 function initWiv(wiv) {
-  let left = wiv.offsetLeft;
-  let top = wiv.offsetTop;
-  let height = parseFloat(wiv.dataset.wivHeight);
-  let penRadius = parseFloat(wiv.dataset.wivThickness)
-
   //style wiv elements 
   wiv.style.display = "inline-block";
   wiv.style.borderRadius = parseFloat(wiv.dataset.wivHeight) + "px";
@@ -27,6 +22,12 @@ function initWivs() {
   var wivs = document.getElementsByClassName("wiv");
   for (i = wivs.length - 1; i >= 0; i--) {
     initWiv(wivs[i]);
+  }
+  // reset the previous' wiv canvas size for responsive views
+  for (i = 0; i < wivs.length; i++) {
+    var canvas = document.getElementsByTagName("canvas")[i];
+      canvas.height = wivs[i].offsetHeight;
+      canvas.width = wivs[i].offsetWidth;
   }
 }
 
