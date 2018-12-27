@@ -9,7 +9,7 @@ function wiv () {
     wiv.children[0].style.padding = (parseFloat(wiv.dataset.wivHeight) * 4) + "px";
 
     //insert wiv canvas element
-    var canvas = document.createElement('canvas');
+    let canvas = document.createElement('canvas');
     canvas.id = "wiv-curves-" + wivCounter++
     canvas.className = "wiv-curves";
     canvas.width = wiv.offsetWidth;
@@ -20,13 +20,13 @@ function wiv () {
     wiv.insertBefore(canvas, wiv.firstChild);
 
     
-    var color = wiv.dataset.wivColor != undefined ? wiv.dataset.wivColor : "#FF0000";
-    var speed = parseFloat(wiv.dataset.wivSpeed)
-    var height = parseFloat(wiv.dataset.wivHeight)
-    var tightness = parseFloat(wiv.dataset.wivTightness)
-    var thickness = parseFloat(wiv.dataset.wivThickness)
+    let color = wiv.dataset.wivColor != undefined ? wiv.dataset.wivColor : "#FF0000";
+    let speed = parseFloat(wiv.dataset.wivSpeed)
+    let height = parseFloat(wiv.dataset.wivHeight)
+    let tightness = parseFloat(wiv.dataset.wivTightness)
+    let thickness = parseFloat(wiv.dataset.wivThickness)
     
-    var ctx = canvas.getContext("2d");
+    let ctx = canvas.getContext("2d");
     ctx.strokeStyle = color;
     ctx.lineWidth = thickness;
 
@@ -46,13 +46,13 @@ function wiv () {
    * Initialize all wiv elements. Going in reverse makes sure heights adjust to children wivs. 
    */
   function initWivs() {
-    var wivs = document.getElementsByClassName("wiv");
+    let wivs = document.getElementsByClassName("wiv");
     for (i = wivs.length - 1; i >= 0; i--) {
       initWiv(wivs[i]);
     }
     // reset the previous' wiv canvas size for responsive views
     for (i = 0; i < wivs.length; i++) {
-      var canvas = document.getElementsByTagName("canvas")[i];
+      let canvas = document.getElementsByTagName("canvas")[i];
       canvas.height = wivs[i].offsetHeight;
       canvas.width = wivs[i].offsetWidth;
     }
@@ -63,23 +63,23 @@ function wiv () {
   Represents the logic to draw a single frame. Animates all wivs
   */
   function animateLines() {
-    var wivCurves = document.getElementsByClassName("wiv-curves");
+    let wivCurves = document.getElementsByClassName("wiv-curves");
 
-    for (var wivCurve of wivCurves) {
-      var curveCache = cache[wivCurve.id];
-      var speed = curveCache.speed;
-      var height = curveCache.height;
-      var tightness = curveCache.tightness;
-      var thickness = curveCache.thickness;
-      var count = curveCache.count;
-      var color = curveCache.color;
+    for (let wivCurve of wivCurves) {
+      let curveCache = cache[wivCurve.id];
+      let speed = curveCache.speed;
+      let height = curveCache.height;
+      let tightness = curveCache.tightness;
+      let thickness = curveCache.thickness;
+      let count = curveCache.count;
+      let color = curveCache.color;
 
-      var ctx = curveCache.context;
+      let ctx = curveCache.context;
       ctx.beginPath();
       ctx.clearRect(0, 0, wivCurve.width, wivCurve.height);
 
-      var x = height * 2 + thickness
-      var y = height - Math.sin(((x - count) * tightness) * Math.PI / 180) * height + thickness;
+      let x = height * 2 + thickness
+      let y = height - Math.sin(((x - count) * tightness) * Math.PI / 180) * height + thickness;
 
       // keep track of original location of x and y to complete the loop later on 
       let oX = x;
