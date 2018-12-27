@@ -1,3 +1,5 @@
+![under construction](https://web.archive.org/web/20091027144058im_/http://www.geocities.com/TelevisionCity/Studio/4711/Under_Construction.gif)
+
 # wiv.js
 A library for a more wiggly div
 
