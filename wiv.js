@@ -1,4 +1,4 @@
-function wiv () {
+function wiv() {
   let cache = {}
   let wivCounter = 0;
 
@@ -19,13 +19,13 @@ function wiv () {
     canvas.style.pointerEvents = "none";
     wiv.insertBefore(canvas, wiv.firstChild);
 
-    
+
     let color = wiv.dataset.wivColor != undefined ? wiv.dataset.wivColor : "#FF0000";
     let speed = parseFloat(wiv.dataset.wivSpeed)
     let height = parseFloat(wiv.dataset.wivHeight)
     let tightness = parseFloat(wiv.dataset.wivTightness)
     let thickness = parseFloat(wiv.dataset.wivThickness)
-    
+
     let ctx = canvas.getContext("2d");
     ctx.strokeStyle = color;
     ctx.lineWidth = thickness;
@@ -56,13 +56,10 @@ function wiv () {
       canvas.height = wivs[i].offsetHeight;
       canvas.width = wivs[i].offsetWidth;
     }
-    window.requestAnimationFrame(animateLines);
+    window.requestAnimationFrame(processWivs);
   }
 
-  /**
-  Represents the logic to draw a single frame. Animates all wivs
-  */
-  function animateLines() {
+  function processWivs() {
     let wivCurves = document.getElementsByClassName("wiv-curves");
 
     for (let wivCurve of wivCurves) {
@@ -73,72 +70,77 @@ function wiv () {
       let thickness = curveCache.thickness;
       let count = curveCache.count;
       let color = curveCache.color;
-
       let ctx = curveCache.context;
-      ctx.beginPath();
-      ctx.clearRect(0, 0, wivCurve.width, wivCurve.height);
+      curveCache.count = drawLines(wivCurve, speed, height, tightness, thickness, count, color, ctx)
+    }
+    // reanimate 
+    window.requestAnimationFrame(processWivs);
+  }
 
-      let x = height * 2 + thickness
-      let y = height - Math.sin(((x - count) * tightness) * Math.PI / 180) * height + thickness;
+  /**
+  Represents the logic to draw a single frame. Animates all wivs
+  */
+  function drawLines(canvas, speed, height, tightness, thickness, frame, color, ctx = null) {
+    if(ctx === null){
+      ctx = canvas.getContext("2d");
+    }
+    ctx.beginPath();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // keep track of original location of x and y to complete the loop later on 
-      let oX = x;
-      let oY = y;
+    let x = height * 2 + thickness
+    let y = height - Math.sin(((x - frame) * tightness) * Math.PI / 180) * height + thickness;
 
-      //draw top
-      for (x = height * 3; x <= wivCurve.width - (height * 3); x += 1) {
-        y = height - Math.sin(((x - count) * tightness) * Math.PI / 180) * height + thickness;
-        ctx.lineTo(x, y);
-      }
+    // keep track of original location of x and y to complete the loop later on 
+    let oX = x;
+    let oY = y;
 
-      //draw right
-      for (y = y; y <= wivCurve.height - (height * 3); y += 1) {
-        x = (wivCurve.width - height * 3) + height - Math.cos(((y - count) * tightness) * Math.PI / 180) * height + thickness;
-        ctx.lineTo(x, y);
-      }
-
-      //draw bottom
-      for (x = x; x >= (height * 3); x -= 1) {
-        y = (wivCurve.height - height * 3) + height - Math.sin(((x - count) * tightness) * Math.PI / 180) * height + thickness;
-        ctx.lineTo(x, y);
-      }
-
-      //draw left
-      for (y = y; y >= (height * 2) + thickness; y -= 1) {
-        x = height - Math.cos(((y - count) * tightness) * Math.PI / 180) * height + thickness;
-        ctx.lineTo(x, y);
-      }
-
-      //draw top
-      for (x = x; x <= wivCurve.width - (height * 3); x += 1) {
-        y = height - Math.sin(((x - count) * tightness) * Math.PI / 180) * height + thickness;
-        ctx.lineTo(x, y);
-      }
-
-      //pull color from dataset
-      ctx.strokeStyle = color
-      ctx.lineWidth = thickness;
-      
-      ctx.stroke();
-
-      //current frame is tracked on per wiv basis. This is to help with speed calculations 
-      if (count > 100000) {
-        count = 0;
-      }
-
-      count = (count ? count : 0) + speed;
-      curveCache.count = count 
+    //draw top
+    for (x = height * 3; x <= canvas.width - (height * 3); x += 1) {
+      y = height - Math.sin(((x - frame) * tightness) * Math.PI / 180) * height + thickness;
+      ctx.lineTo(x, y);
     }
 
-    //reanimate 
-    window.requestAnimationFrame(animateLines);
+    //draw right
+    for (y = y; y <= canvas.height - (height * 3); y += 1) {
+      x = (canvas.width - height * 3) + height - Math.cos(((y - frame) * tightness) * Math.PI / 180) * height + thickness;
+      ctx.lineTo(x, y);
+    }
+
+    //draw bottom
+    for (x = x; x >= (height * 3); x -= 1) {
+      y = (canvas.height - height * 3) + height - Math.sin(((x - frame) * tightness) * Math.PI / 180) * height + thickness;
+      ctx.lineTo(x, y);
+    }
+
+    //draw left
+    for (y = y; y >= (height * 2) + thickness; y -= 1) {
+      x = height - Math.cos(((y - frame) * tightness) * Math.PI / 180) * height + thickness;
+      ctx.lineTo(x, y);
+    }
+
+    //draw top
+    for (x = x; x <= canvas.width - (height * 3); x += 1) {
+      y = height - Math.sin(((x - frame) * tightness) * Math.PI / 180) * height + thickness;
+      ctx.lineTo(x, y);
+    }
+
+    //pull color from dataset
+    ctx.strokeStyle = color
+    ctx.lineWidth = thickness;
+
+    ctx.stroke();
+
+    //current frame is tracked on per wiv basis. This is to help with speed calculations 
+    if (frame > 100000) {
+      frame = 0;
+    }
+
+    frame = (frame ? frame : 0) + speed;
+    return frame;
   }
 
   return {
-    initWivs
+    initWivs,
+    drawLines
   }
 }
-
-//initial wivs and call initial frame render
-let w = wiv();
-w.initWivs();
