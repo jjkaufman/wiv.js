@@ -21,6 +21,11 @@ data-wiv-color="#2C0EF0">
 </div>
 ```
 
+## Special Editions
+React Edition : https://github.com/ndresselhaus/react-wiv
+
+Vue Edition: https://github.com/bronhuston/vue-wiv
+
 
 ### Join the discussion 
 https://join.slack.com/t/wivjs/shared_invite/enQtNTEzMjEzMTY2NTY3LWViYTBiMjkxZGY1MDUxOWI4ODMzNGVkN2U2N2Y0NjQ5NjUwMzY2YzU4NjA5M2UxNmFkOWE4YzY5ZGI5Nzg0NmM
