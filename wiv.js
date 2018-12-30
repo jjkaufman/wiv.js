@@ -37,30 +37,45 @@ function wiv(params) {
     canvas.style.pointerEvents = "none";
     wiv.insertBefore(canvas, wiv.firstChild);
 
+    let ctx = canvas.getContext("2d");
 
-    let color = wiv.dataset.wivColor !== undefined ? wiv.dataset.wivColor : "#FF0000";
-    let speed = speeds[wiv.dataset.wivSpeed] || parseFloat(wiv.dataset.wivSpeed) || speeds.standard;
-    let height = parseFloat(wiv.dataset.wivHeight)
-    let tightness = parseFloat(wiv.dataset.wivTightness)
-    let thickness = parseFloat(wiv.dataset.wivThickness)
+    cache[canvas.id] = {
+      'context': ctx,
+      'count': 0
+    }
+    cacheAttributes(canvas.id, wiv);
+    ctx.strokeStyle = cache[canvas.id].color;
+    ctx.lineWidth = cache[canvas.id].thickness;
+
+    let observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.type == "attributes") {
+          cacheAttributes(canvas.id, mutation.target);
+        }
+      });
+    });
+    observer.observe(wiv, {
+      attributes: true
+    });
+  }
+
+  function cacheAttributes(cacheId, elem) {
+    let color = elem.dataset.wivColor != undefined ? elem.dataset.wivColor : "#FF0000";
+    let speed = speeds[elem.dataset.wivSpeed] || parseFloat(elem.dataset.wivSpeed) || speeds.standard;
+    let height = parseFloat(elem.dataset.wivHeight);
+    let tightness = parseFloat(elem.dataset.wivTightness);
+    let thickness = parseFloat(elem.dataset.wivThickness);
     let increment = validatePositiveInteger(wiv.dataset.wivCompressionFactor);
     increment *= globalCompressionFactor;
 
-    let ctx = canvas.getContext("2d");
-    ctx.strokeStyle = color;
-    ctx.lineWidth = thickness;
-
-    cache[canvas.id] = {
+    cache[cacheId] = Object.assign(cache[cacheId], {
       'speed': speed,
       'height': height,
       'tightness': tightness,
       'thickness': thickness,
-      'increment': increment,
       'color': color,
-      'context': ctx,
-      'count': 0
-    }
-
+      'increment': increment
+    });
   }
 
   /**
