@@ -175,3 +175,5 @@ function wiv(params) {
     drawLines
   }
 }
+
+export { wiv }
