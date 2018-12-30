@@ -21,7 +21,7 @@ function wiv(params) {
   }
 
   function initWiv(wiv) {
-    //style wiv elements 
+    //style wiv elements
     wiv.style.display = "inline-block";
     wiv.style.borderRadius = parseFloat(wiv.dataset.wivHeight) + "px";
     wiv.children[0].style.padding = (parseFloat(wiv.dataset.wivHeight) * 4) + "px";
@@ -36,11 +36,11 @@ function wiv(params) {
     canvas.style.position = "absolute";
     canvas.style.pointerEvents = "none";
     wiv.insertBefore(canvas, wiv.firstChild);
-
     cache[canvas.id] = parseParamsFromWiv(wiv, canvas)
   }
+  
   function parseParamsFromWiv(wiv, canvas) {
-    let color = wiv.dataset.wivColor != undefined ? wiv.dataset.wivColor : "#FF0000";
+    let color = wiv.dataset.wivColor !== undefined ? wiv.dataset.wivColor : "#FF0000";
     let speed = speeds[wiv.dataset.wivSpeed] || parseFloat(wiv.dataset.wivSpeed) || speeds.standard;
     let height = parseFloat(wiv.dataset.wivHeight)
     let tightness = parseFloat(wiv.dataset.wivTightness)
@@ -67,7 +67,7 @@ function wiv(params) {
     };
   }
   /**
-   * Initialize all wiv elements. Going in reverse makes sure heights adjust to children wivs. 
+   * Initialize all wiv elements. Going in reverse makes sure heights adjust to children wivs.
    */
   function initWivs() {
     let wivs = document.getElementsByClassName("wiv");
@@ -90,7 +90,7 @@ function wiv(params) {
       let curveCache = cache[wivCurve.id];
       curveCache.frame = drawLines(wivCurve, curveCache)
     }
-    // reanimate 
+    // reanimate
     window.requestAnimationFrame(processWivs);
   }
 
@@ -129,28 +129,29 @@ function wiv(params) {
     }
 
     //draw right
-    for (y = y; y <= canvas.height - (height * 3); y += increment) {
+    for (; y <= canvas.height - (height * 3); y += increment) {
       imageMode && Math.floor(y % imageFrequency) == 0 && ctx.drawImage(canvasImage, x - (imageSize / 4), y , imageSize, imageSize);
       x = (canvas.width - height * 3) + height - Math.cos(((y - frame) * tightness) * Math.PI / 180) * height + thickness;
       ctx.lineTo(x, y);
     }
 
     //draw bottom
-    for (x = x; x >= (height * 3); x -= increment) {
+
+    for (; x >= (height * 3); x -= increment) {
       imageMode && Math.floor(x % imageFrequency) == 0 && ctx.drawImage(canvasImage, x, y - (imageSize / 4 ) , imageSize, imageSize);
       y = (canvas.height - height * 3) + height - Math.sin(((x - frame) * tightness) * Math.PI / 180) * height + thickness;
       ctx.lineTo(x, y);
     }
 
     //draw left
-    for (y = y; y >= (height * 2) + thickness; y -= increment) {
+    for (; y >= (height * 2) + thickness; y -= increment) {
       imageMode && Math.floor(y % imageFrequency) == 0 && ctx.drawImage(canvasImage, x + (imageSize / 8), y , imageSize, imageSize);
       x = height - Math.cos(((y - frame) * tightness) * Math.PI / 180) * height + thickness;
       ctx.lineTo(x, y);
     }
 
     //draw top
-    for (x = x; x <= (height * 3) + increment; x += increment) {
+    for (; x <= (height * 3) + increment; x += increment) {
       y = height - Math.sin(((x - frame) * tightness) * Math.PI / 180) * height + thickness;
       ctx.lineTo(x, y);
     }
@@ -162,7 +163,7 @@ function wiv(params) {
       ctx.stroke();
     }
 
-    //current frame is tracked on per wiv basis. This is to help with speed calculations 
+    //current frame is tracked on per wiv basis. This is to help with speed calculations
     if (frame > 100000) {
       frame = 0;
     }
@@ -185,3 +186,5 @@ function wiv(params) {
     drawLines
   }
 }
+
+export { wiv }
