@@ -11,7 +11,7 @@ function wiv(params) {
   }
   let cache = {}
   let wivCounter = 0;
-  
+
   function initWiv(wiv) {
     //style wiv elements 
     wiv.style.display = "inline-block";
