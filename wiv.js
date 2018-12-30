@@ -47,8 +47,8 @@ function wiv(params) {
     let thickness = parseFloat(wiv.dataset.wivThickness)
     let increment = validatePositiveInteger(wiv.dataset.wivCompressionFactor);
     increment *= globalCompressionFactor;
-    let image = wiv.dataset.wivImageUrl;
-    let imageStyle = wiv.dataset.wivImageStyle;
+    let image = wiv.dataset.wivImage;
+    let imageSize = wiv.dataset.wivImageSize;
     let imageFrequency = wiv.dataset.wivImageFrequency;
     let ctx = canvas.getContext("2d");
     return {
@@ -58,9 +58,10 @@ function wiv(params) {
       'thickness': thickness,
       'increment': increment,
       'color': color,
+      'imageMode': image !== undefined, 
       'image': image,
-      'imageStyle': imageStyle,
-      'imageFrequency': imageFrequency,
+      'imageSize': imageSize || height * 2,
+      'imageFrequency': imageFrequency || tightness * 2,
       'context': ctx,
       'frame': 0
     };
@@ -97,7 +98,6 @@ function wiv(params) {
   Represents the logic to draw a single frame. Animates all wivs
   */
   function drawLines(canvas, params) {
-    debugger
     let speed = params.speed;
     let height = params.height;
     let tightness = params.tightness;
@@ -105,6 +105,12 @@ function wiv(params) {
     let increment = params.increment;
     let frame = params.frame;
     let color = params.color;
+    let imageMode = params.imageMode;
+    let image = params.image;
+    let imageSize = params.imageSize;
+    let imageFrequency = params.imageFrequency;
+    let canvasImage = new Image();
+    canvasImage.src = image;
     let ctx = params.context;
     if (ctx === null) {
       ctx = canvas.getContext("2d");
@@ -115,30 +121,30 @@ function wiv(params) {
     let x = height * 2 + thickness
     let y = height - Math.sin(((x - frame) * tightness) * Math.PI / 180) * height + thickness;
 
-    // keep track of original location of x and y to complete the loop later on 
-    let oX = x;
-    let oY = y;
-
     //draw top
     for (x = height * 3; x <= canvas.width - (height * 3); x += increment) {
+      imageMode && Math.floor(x % imageFrequency) == 0 && ctx.drawImage(canvasImage, x, y , imageSize, imageSize);
       y = height - Math.sin(((x - frame) * tightness) * Math.PI / 180) * height + thickness;
       ctx.lineTo(x, y);
     }
 
     //draw right
     for (y = y; y <= canvas.height - (height * 3); y += increment) {
+      imageMode && Math.floor(y % imageFrequency) == 0 && ctx.drawImage(canvasImage, x - (imageSize / 4), y , imageSize, imageSize);
       x = (canvas.width - height * 3) + height - Math.cos(((y - frame) * tightness) * Math.PI / 180) * height + thickness;
       ctx.lineTo(x, y);
     }
 
     //draw bottom
     for (x = x; x >= (height * 3); x -= increment) {
+      imageMode && Math.floor(x % imageFrequency) == 0 && ctx.drawImage(canvasImage, x, y - (imageSize / 4 ) , imageSize, imageSize);
       y = (canvas.height - height * 3) + height - Math.sin(((x - frame) * tightness) * Math.PI / 180) * height + thickness;
       ctx.lineTo(x, y);
     }
 
     //draw left
     for (y = y; y >= (height * 2) + thickness; y -= increment) {
+      imageMode && Math.floor(y % imageFrequency) == 0 && ctx.drawImage(canvasImage, x + (imageSize / 8), y , imageSize, imageSize);
       x = height - Math.cos(((y - frame) * tightness) * Math.PI / 180) * height + thickness;
       ctx.lineTo(x, y);
     }
@@ -152,8 +158,9 @@ function wiv(params) {
     //pull color from dataset
     ctx.strokeStyle = color
     ctx.lineWidth = thickness;
-
-    ctx.stroke();
+    if(thickness != 0 ){
+      ctx.stroke();
+    }
 
     //current frame is tracked on per wiv basis. This is to help with speed calculations 
     if (frame > 100000) {
