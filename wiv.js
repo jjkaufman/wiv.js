@@ -37,7 +37,9 @@ function wiv(params) {
     canvas.style.pointerEvents = "none";
     wiv.insertBefore(canvas, wiv.firstChild);
 
-
+    cache[canvas.id] = parseParamsFromWiv(wiv, canvas)
+  }
+  function parseParamsFromWiv(wiv, canvas) {
     let color = wiv.dataset.wivColor != undefined ? wiv.dataset.wivColor : "#FF0000";
     let speed = speeds[wiv.dataset.wivSpeed] || parseFloat(wiv.dataset.wivSpeed) || speeds.standard;
     let height = parseFloat(wiv.dataset.wivHeight)
@@ -45,24 +47,24 @@ function wiv(params) {
     let thickness = parseFloat(wiv.dataset.wivThickness)
     let increment = validatePositiveInteger(wiv.dataset.wivCompressionFactor);
     increment *= globalCompressionFactor;
-
+    let image = wiv.dataset.wivImageUrl;
+    let imageStyle = wiv.dataset.wivImageStyle;
+    let imageFrequency = wiv.dataset.wivImageFrequency;
     let ctx = canvas.getContext("2d");
-    ctx.strokeStyle = color;
-    ctx.lineWidth = thickness;
-
-    cache[canvas.id] = {
+    return {
       'speed': speed,
       'height': height,
       'tightness': tightness,
       'thickness': thickness,
       'increment': increment,
       'color': color,
+      'image': image,
+      'imageStyle': imageStyle,
+      'imageFrequency': imageFrequency,
       'context': ctx,
-      'count': 0
-    }
-
+      'frame': 0
+    };
   }
-
   /**
    * Initialize all wiv elements. Going in reverse makes sure heights adjust to children wivs. 
    */
@@ -85,15 +87,7 @@ function wiv(params) {
 
     for (let wivCurve of wivCurves) {
       let curveCache = cache[wivCurve.id];
-      let speed = curveCache.speed;
-      let height = curveCache.height;
-      let tightness = curveCache.tightness;
-      let thickness = curveCache.thickness;
-      let increment = curveCache.increment;
-      let count = curveCache.count;
-      let color = curveCache.color;
-      let ctx = curveCache.context;
-      curveCache.count = drawLines(wivCurve, speed, height, tightness, thickness, increment, count, color, ctx)
+      curveCache.frame = drawLines(wivCurve, curveCache)
     }
     // reanimate 
     window.requestAnimationFrame(processWivs);
@@ -102,8 +96,17 @@ function wiv(params) {
   /**
   Represents the logic to draw a single frame. Animates all wivs
   */
-  function drawLines(canvas, speed, height, tightness, thickness, increment, frame, color, ctx = null) {
-    if(ctx === null){
+  function drawLines(canvas, params) {
+    debugger
+    let speed = params.speed;
+    let height = params.height;
+    let tightness = params.tightness;
+    let thickness = params.thickness;
+    let increment = params.increment;
+    let frame = params.frame;
+    let color = params.color;
+    let ctx = params.context;
+    if (ctx === null) {
       ctx = canvas.getContext("2d");
     }
     ctx.beginPath();
