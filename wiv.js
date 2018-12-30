@@ -1,4 +1,14 @@
-function wiv() {
+function wiv(params) {
+  params = params || {}
+  let isMobile = false;
+  if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+    isMobile = true;
+  }
+  let mobileCompressionFactor = validatePositiveInteger(params.mobileCompressionFactor, 2);
+  let globalCompressionFactor = validatePositiveInteger(params.globalCompressionFactor);
+  if (isMobile) {
+    globalCompressionFactor *= mobileCompressionFactor;
+  }
   let cache = {}
   let wivCounter = 0;
 
@@ -33,6 +43,8 @@ function wiv() {
     let height = parseFloat(wiv.dataset.wivHeight)
     let tightness = parseFloat(wiv.dataset.wivTightness)
     let thickness = parseFloat(wiv.dataset.wivThickness)
+    let increment = validatePositiveInteger(wiv.dataset.wivCompressionFactor);
+    increment *= globalCompressionFactor;
 
     let ctx = canvas.getContext("2d");
     ctx.strokeStyle = color;
@@ -43,6 +55,7 @@ function wiv() {
       'height': height,
       'tightness': tightness,
       'thickness': thickness,
+      'increment': increment,
       'color': color,
       'context': ctx,
       'count': 0
@@ -76,10 +89,11 @@ function wiv() {
       let height = curveCache.height;
       let tightness = curveCache.tightness;
       let thickness = curveCache.thickness;
+      let increment = curveCache.increment;
       let count = curveCache.count;
       let color = curveCache.color;
       let ctx = curveCache.context;
-      curveCache.count = drawLines(wivCurve, speed, height, tightness, thickness, count, color, ctx)
+      curveCache.count = drawLines(wivCurve, speed, height, tightness, thickness, increment, count, color, ctx)
     }
     // reanimate 
     window.requestAnimationFrame(processWivs);
@@ -88,7 +102,7 @@ function wiv() {
   /**
   Represents the logic to draw a single frame. Animates all wivs
   */
-  function drawLines(canvas, speed, height, tightness, thickness, frame, color, ctx = null) {
+  function drawLines(canvas, speed, height, tightness, thickness, increment, frame, color, ctx = null) {
     if(ctx === null){
       ctx = canvas.getContext("2d");
     }
@@ -103,31 +117,31 @@ function wiv() {
     let oY = y;
 
     //draw top
-    for (x = height * 3; x <= canvas.width - (height * 3); x += 1) {
+    for (x = height * 3; x <= canvas.width - (height * 3); x += increment) {
       y = height - Math.sin(((x - frame) * tightness) * Math.PI / 180) * height + thickness;
       ctx.lineTo(x, y);
     }
 
     //draw right
-    for (y = y; y <= canvas.height - (height * 3); y += 1) {
+    for (y = y; y <= canvas.height - (height * 3); y += increment) {
       x = (canvas.width - height * 3) + height - Math.cos(((y - frame) * tightness) * Math.PI / 180) * height + thickness;
       ctx.lineTo(x, y);
     }
 
     //draw bottom
-    for (x = x; x >= (height * 3); x -= 1) {
+    for (x = x; x >= (height * 3); x -= increment) {
       y = (canvas.height - height * 3) + height - Math.sin(((x - frame) * tightness) * Math.PI / 180) * height + thickness;
       ctx.lineTo(x, y);
     }
 
     //draw left
-    for (y = y; y >= (height * 2) + thickness; y -= 1) {
+    for (y = y; y >= (height * 2) + thickness; y -= increment) {
       x = height - Math.cos(((y - frame) * tightness) * Math.PI / 180) * height + thickness;
       ctx.lineTo(x, y);
     }
 
     //draw top
-    for (x = x; x <= canvas.width - (height * 3); x += 1) {
+    for (x = x; x <= (height * 3) + increment; x += increment) {
       y = height - Math.sin(((x - frame) * tightness) * Math.PI / 180) * height + thickness;
       ctx.lineTo(x, y);
     }
@@ -145,6 +159,15 @@ function wiv() {
 
     frame = (frame ? frame : 0) + speed;
     return frame;
+  }
+
+  function validatePositiveInteger(value, defaultVal) {
+    defaultVal = defaultVal || 1;
+    value = parseInt(value);
+    if (!value || value < 1) {
+      value = defaultVal;
+    }
+    return value;
   }
 
   return {
