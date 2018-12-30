@@ -38,7 +38,7 @@ function wiv(params) {
     wiv.insertBefore(canvas, wiv.firstChild);
 
 
-    let color = wiv.dataset.wivColor != undefined ? wiv.dataset.wivColor : "#FF0000";
+    let color = wiv.dataset.wivColor !== undefined ? wiv.dataset.wivColor : "#FF0000";
     let speed = speeds[wiv.dataset.wivSpeed] || parseFloat(wiv.dataset.wivSpeed) || speeds.standard;
     let height = parseFloat(wiv.dataset.wivHeight)
     let tightness = parseFloat(wiv.dataset.wivTightness)
@@ -112,10 +112,6 @@ function wiv(params) {
     let x = height * 2 + thickness
     let y = height - Math.sin(((x - frame) * tightness) * Math.PI / 180) * height + thickness;
 
-    // keep track of original location of x and y to complete the loop later on
-    let oX = x;
-    let oY = y;
-
     //draw top
     for (x = height * 3; x <= canvas.width - (height * 3); x += increment) {
       y = height - Math.sin(((x - frame) * tightness) * Math.PI / 180) * height + thickness;
@@ -123,25 +119,25 @@ function wiv(params) {
     }
 
     //draw right
-    for (y = y; y <= canvas.height - (height * 3); y += increment) {
+    for (; y <= canvas.height - (height * 3); y += increment) {
       x = (canvas.width - height * 3) + height - Math.cos(((y - frame) * tightness) * Math.PI / 180) * height + thickness;
       ctx.lineTo(x, y);
     }
 
     //draw bottom
-    for (x = x; x >= (height * 3); x -= increment) {
+    for (; x >= (height * 3); x -= increment) {
       y = (canvas.height - height * 3) + height - Math.sin(((x - frame) * tightness) * Math.PI / 180) * height + thickness;
       ctx.lineTo(x, y);
     }
 
     //draw left
-    for (y = y; y >= (height * 2) + thickness; y -= increment) {
+    for (; y >= (height * 2) + thickness; y -= increment) {
       x = height - Math.cos(((y - frame) * tightness) * Math.PI / 180) * height + thickness;
       ctx.lineTo(x, y);
     }
 
     //draw top
-    for (x = x; x <= (height * 3) + increment; x += increment) {
+    for (; x <= (height * 3) + increment; x += increment) {
       y = height - Math.sin(((x - frame) * tightness) * Math.PI / 180) * height + thickness;
       ctx.lineTo(x, y);
     }
