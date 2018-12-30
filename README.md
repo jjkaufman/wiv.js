@@ -1,6 +1,6 @@
 ![under construction](https://web.archive.org/web/20091027144058im_/http://www.geocities.com/TelevisionCity/Studio/4711/Under_Construction.gif)
 
-# wiv.js
+# wiv.js &middot; [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE) [![npm version](https://img.shields.io/npm/v/wiv.js.svg?style=flat)](https://www.npmjs.com/package/wiv.js)
 A library for a more wiggly div
 
 https://jjkaufman.github.io/wiv.js/
