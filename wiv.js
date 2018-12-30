@@ -2,6 +2,14 @@ function wiv() {
   let cache = {}
   let wivCounter = 0;
 
+  const speeds = {
+    "slow": .15,
+    "standard": .55,
+    "fast": 1.55,
+    "faster": 3.15,
+    "turbo": 6.15
+  }
+
   function initWiv(wiv) {
     //style wiv elements 
     wiv.style.display = "inline-block";
@@ -21,7 +29,7 @@ function wiv() {
 
 
     let color = wiv.dataset.wivColor != undefined ? wiv.dataset.wivColor : "#FF0000";
-    let speed = parseFloat(wiv.dataset.wivSpeed)
+    let speed = speeds[wiv.dataset.wivSpeed] || parseFloat(wiv.dataset.wivSpeed) || speeds.standard;
     let height = parseFloat(wiv.dataset.wivHeight)
     let tightness = parseFloat(wiv.dataset.wivTightness)
     let thickness = parseFloat(wiv.dataset.wivThickness)
