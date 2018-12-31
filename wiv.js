@@ -24,7 +24,8 @@ function wiv(params) {
     //style wiv elements
     wiv.style.display = "inline-block";
     wiv.style.borderRadius = parseFloat(wiv.dataset.wivHeight) + "px";
-    wiv.children[0].style.padding = (parseFloat(wiv.dataset.wivHeight) * 4) + "px";
+    let imageSize = parseFloat(wiv.dataset.wivImageSize) || 0
+    wiv.children[0].style.padding = imageSize + (parseFloat(wiv.dataset.wivHeight) * 4) + "px";
 
     //insert wiv canvas element
     let canvas = document.createElement('canvas');
@@ -58,11 +59,10 @@ function wiv(params) {
       'thickness': thickness,
       'increment': increment,
       'color': color,
-      'imageMode': image !== undefined, 
       'image': image,
-      'imageSize': imageSize || height * 2,
+      'imageSize': imageSize || height ,
       'imageFrequency': imageFrequency || tightness * 2,
-      'context': ctx,
+      'ctx': ctx,
       'frame': 0
     };
   }
@@ -97,21 +97,14 @@ function wiv(params) {
   /**
   Represents the logic to draw a single frame. Animates all wivs
   */
-  function drawLines(canvas, params) {
-    let speed = params.speed;
-    let height = params.height;
-    let tightness = params.tightness;
-    let thickness = params.thickness;
-    let increment = params.increment;
-    let frame = params.frame;
-    let color = params.color;
-    let imageMode = params.imageMode;
-    let image = params.image;
-    let imageSize = params.imageSize;
-    let imageFrequency = params.imageFrequency;
-    let canvasImage = new Image();
-    canvasImage.src = image;
-    let ctx = params.context;
+ function drawLines(canvas, {speed, height, tightness, thickness, increment, frame, color, image, imageSize, imageFrequency, ctx}={}) {    
+    var canvasImage = null;
+    let imageMode = image !== undefined;
+    if(imageMode){
+      canvasImage = new Image();
+      canvasImage.src = image;
+    }
+
     if (ctx === null) {
       ctx = canvas.getContext("2d");
     }
@@ -121,38 +114,40 @@ function wiv(params) {
     let x = height * 2 + thickness
     let y = height - Math.sin(((x - frame) * tightness) * Math.PI / 180) * height + thickness;
 
+    //range of the sin function will be [-1 -> 1] * height. Since the logic will never want negative values for y (or clipping), it must have a vertical offset that takes all parameters into account
+    let offset = height + Math.max(thickness, imageMode ? imageSize : 0)
+    
     //draw top
     for (x = height * 3; x <= canvas.width - (height * 3); x += increment) {
+      y =  offset + (Math.sin(((x - frame) * tightness) * Math.PI / 180) * height);
       imageMode && Math.floor(x % imageFrequency) == 0 && ctx.drawImage(canvasImage, x, y , imageSize, imageSize);
-      y = height - Math.sin(((x - frame) * tightness) * Math.PI / 180) * height + thickness;
       ctx.lineTo(x, y);
     }
 
     //draw right
     for (; y <= canvas.height - (height * 3); y += increment) {
-      imageMode && Math.floor(y % imageFrequency) == 0 && ctx.drawImage(canvasImage, x - (imageSize / 4), y , imageSize, imageSize);
-      x = (canvas.width - height * 3) + height - Math.cos(((y - frame) * tightness) * Math.PI / 180) * height + thickness;
+      x = (canvas.width - offset) - (Math.cos(((y - frame) * tightness) * Math.PI / 180) * height);
+      imageMode &&  Math.floor(y % imageFrequency) == 0 && ctx.drawImage(canvasImage, x , y , imageSize, imageSize);
       ctx.lineTo(x, y);
     }
 
     //draw bottom
-
     for (; x >= (height * 3); x -= increment) {
-      imageMode && Math.floor(x % imageFrequency) == 0 && ctx.drawImage(canvasImage, x, y - (imageSize / 4 ) , imageSize, imageSize);
-      y = (canvas.height - height * 3) + height - Math.sin(((x - frame) * tightness) * Math.PI / 180) * height + thickness;
+      y = (canvas.height - offset) + (Math.sin(((x - frame) * tightness) * Math.PI / 180) * height);
+      imageMode && Math.floor(x % imageFrequency) == 0 && ctx.drawImage(canvasImage, x, y  , imageSize, imageSize);
       ctx.lineTo(x, y);
     }
 
     //draw left
     for (; y >= (height * 2) + thickness; y -= increment) {
-      imageMode && Math.floor(y % imageFrequency) == 0 && ctx.drawImage(canvasImage, x + (imageSize / 8), y , imageSize, imageSize);
-      x = height - Math.cos(((y - frame) * tightness) * Math.PI / 180) * height + thickness;
+      x = offset + Math.cos(((y - frame) * tightness) * Math.PI / 180) * height;
+      imageMode && Math.floor(y % imageFrequency) == 0 && ctx.drawImage(canvasImage, x , y , imageSize, imageSize);
       ctx.lineTo(x, y);
     }
 
     //draw top
     for (; x <= (height * 3) + increment; x += increment) {
-      y = height - Math.sin(((x - frame) * tightness) * Math.PI / 180) * height + thickness;
+      y = (Math.sin(((x - frame) * tightness) * Math.PI / 180) * height) + offset ;
       ctx.lineTo(x, y);
     }
 

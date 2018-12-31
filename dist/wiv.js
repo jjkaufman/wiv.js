@@ -30,7 +30,8 @@
       //style wiv elements
       wiv.style.display = "inline-block";
       wiv.style.borderRadius = parseFloat(wiv.dataset.wivHeight) + "px";
-      wiv.children[0].style.padding = (parseFloat(wiv.dataset.wivHeight) * 4) + "px";
+      let imageSize = parseFloat(wiv.dataset.wivImageSize) || 0;
+      wiv.children[0].style.padding = imageSize + (parseFloat(wiv.dataset.wivHeight) * 4) + "px";
 
       //insert wiv canvas element
       let canvas = document.createElement('canvas');
@@ -42,8 +43,10 @@
       canvas.style.position = "absolute";
       canvas.style.pointerEvents = "none";
       wiv.insertBefore(canvas, wiv.firstChild);
-
-
+      cache[canvas.id] = parseParamsFromWiv(wiv, canvas);
+    }
+    
+    function parseParamsFromWiv(wiv, canvas) {
       let color = wiv.dataset.wivColor !== undefined ? wiv.dataset.wivColor : "#FF0000";
       let speed = speeds[wiv.dataset.wivSpeed] || parseFloat(wiv.dataset.wivSpeed) || speeds.standard;
       let height = parseFloat(wiv.dataset.wivHeight);
@@ -51,24 +54,24 @@
       let thickness = parseFloat(wiv.dataset.wivThickness);
       let increment = validatePositiveInteger(wiv.dataset.wivCompressionFactor);
       increment *= globalCompressionFactor;
-
+      let image = wiv.dataset.wivImage;
+      let imageSize = wiv.dataset.wivImageSize;
+      let imageFrequency = wiv.dataset.wivImageFrequency;
       let ctx = canvas.getContext("2d");
-      ctx.strokeStyle = color;
-      ctx.lineWidth = thickness;
-
-      cache[canvas.id] = {
+      return {
         'speed': speed,
         'height': height,
         'tightness': tightness,
         'thickness': thickness,
         'increment': increment,
         'color': color,
-        'context': ctx,
-        'count': 0
+        'image': image,
+        'imageSize': imageSize || height ,
+        'imageFrequency': imageFrequency || tightness * 2,
+        'ctx': ctx,
+        'frame': 0
       };
-
     }
-
     /**
      * Initialize all wiv elements. Going in reverse makes sure heights adjust to children wivs.
      */
@@ -91,15 +94,7 @@
 
       for (let wivCurve of wivCurves) {
         let curveCache = cache[wivCurve.id];
-        let speed = curveCache.speed;
-        let height = curveCache.height;
-        let tightness = curveCache.tightness;
-        let thickness = curveCache.thickness;
-        let increment = curveCache.increment;
-        let count = curveCache.count;
-        let color = curveCache.color;
-        let ctx = curveCache.context;
-        curveCache.count = drawLines(wivCurve, speed, height, tightness, thickness, increment, count, color, ctx);
+        curveCache.frame = drawLines(wivCurve, curveCache);
       }
       // reanimate
       window.requestAnimationFrame(processWivs);
@@ -108,8 +103,15 @@
     /**
     Represents the logic to draw a single frame. Animates all wivs
     */
-    function drawLines(canvas, speed, height, tightness, thickness, increment, frame, color, ctx = null) {
-      if(ctx === null){
+   function drawLines(canvas, {speed, height, tightness, thickness, increment, frame, color, image, imageSize, imageFrequency, ctx}={}) {    
+      var canvasImage = null;
+      let imageMode = image !== undefined;
+      if(imageMode){
+        canvasImage = new Image();
+        canvasImage.src = image;
+      }
+
+      if (ctx === null) {
         ctx = canvas.getContext("2d");
       }
       ctx.beginPath();
@@ -118,41 +120,48 @@
       let x = height * 2 + thickness;
       let y = height - Math.sin(((x - frame) * tightness) * Math.PI / 180) * height + thickness;
 
+      //range of the sin function will be [-1 -> 1] * height. Since we never want negative values for y (or clipping), we must have a vertical offset that takes all parameters into account
+      let offset = height + Math.max(thickness, imageMode ? imageSize : 0);
       //draw top
       for (x = height * 3; x <= canvas.width - (height * 3); x += increment) {
-        y = height - Math.sin(((x - frame) * tightness) * Math.PI / 180) * height + thickness;
+        y =  offset + (Math.sin(((x - frame) * tightness) * Math.PI / 180) * height);
+        imageMode && Math.floor(x % imageFrequency) == 0 && ctx.drawImage(canvasImage, x, y , imageSize, imageSize);
         ctx.lineTo(x, y);
       }
 
       //draw right
       for (; y <= canvas.height - (height * 3); y += increment) {
-        x = (canvas.width - height * 3) + height - Math.cos(((y - frame) * tightness) * Math.PI / 180) * height + thickness;
+        x = (canvas.width - offset) - (Math.cos(((y - frame) * tightness) * Math.PI / 180) * height);
+        imageMode &&  Math.floor(y % imageFrequency) == 0 && ctx.drawImage(canvasImage, x , y , imageSize, imageSize);
         ctx.lineTo(x, y);
       }
 
       //draw bottom
       for (; x >= (height * 3); x -= increment) {
-        y = (canvas.height - height * 3) + height - Math.sin(((x - frame) * tightness) * Math.PI / 180) * height + thickness;
+        y = (canvas.height - offset) + (Math.sin(((x - frame) * tightness) * Math.PI / 180) * height);
+        imageMode && Math.floor(x % imageFrequency) == 0 && ctx.drawImage(canvasImage, x, y  , imageSize, imageSize);
         ctx.lineTo(x, y);
       }
 
       //draw left
       for (; y >= (height * 2) + thickness; y -= increment) {
-        x = height - Math.cos(((y - frame) * tightness) * Math.PI / 180) * height + thickness;
+        x = offset + Math.cos(((y - frame) * tightness) * Math.PI / 180) * height;
+        imageMode && Math.floor(y % imageFrequency) == 0 && ctx.drawImage(canvasImage, x , y , imageSize, imageSize);
         ctx.lineTo(x, y);
       }
 
       //draw top
       for (; x <= (height * 3) + increment; x += increment) {
-        y = height - Math.sin(((x - frame) * tightness) * Math.PI / 180) * height + thickness;
+        y = (Math.sin(((x - frame) * tightness) * Math.PI / 180) * height) + offset ;
         ctx.lineTo(x, y);
       }
 
       //pull color from dataset
       ctx.strokeStyle = color;
       ctx.lineWidth = thickness;
-
-      ctx.stroke();
+      if(thickness != 0 ){
+        ctx.stroke();
+      }
 
       //current frame is tracked on per wiv basis. This is to help with speed calculations
       if (frame > 100000) {
