@@ -9,16 +9,16 @@ https://jjkaufman.github.io/wiv.js/
 ![Hello World Example](https://media.giphy.com/media/NU9BOoe9zuc8ztxima/giphy.gif)
 
 ```html
-<div class="wiv" 
-data-wiv-speed=".55" 
-data-wiv-height="5" 
-data-wiv-tightness="6" 
-data-wiv-thickness="1" 
-data-wiv-color="#2C0EF0">
-  <div>
-    Hello World
-  </div>
+<div class="wiv" data-wiv-speed=".55" data-wiv-height="5" data-wiv-tightness="6" data-wiv-thickness="1"
+  data-wiv-color="#2C0EF0">
+  Hello World
 </div>
+<script src="wiv.js"></script>
+<script>
+  //initial wivs and call initial frame render
+  let w = wiv.wiv();
+  w.initWivs();
+</script>
 ```
 
 ## Special Editions
