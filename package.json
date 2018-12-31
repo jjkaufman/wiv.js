@@ -1,6 +1,6 @@
 {
   "name": "wiv.js",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A library for a more wiggly div",
   "main": "dist/wiv.cjs.js",
   "scripts": {
