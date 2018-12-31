@@ -64,7 +64,7 @@
         mutations.forEach(function(mutation) {
           if (mutation.type == "attributes") {
             cacheAttributes(canvas.id, mutation.target);
-            sizeWivTree(wiv);
+            sizeWivTree(mutation.target);
           }
         });
       });

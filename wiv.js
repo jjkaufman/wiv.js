@@ -39,7 +39,7 @@ function wiv(params) {
     canvas.style.zIndex = 16;
     canvas.style.position = "absolute";
     canvas.style.pointerEvents = "none";
-    wiv.meta.canvas = canvas
+    wiv.meta.canvas = canvas;
     wiv.insertBefore(canvas, wivContent);
 
     sizeWiv(wiv);
@@ -58,7 +58,7 @@ function wiv(params) {
       mutations.forEach(function(mutation) {
         if (mutation.type == "attributes") {
           cacheAttributes(canvas.id, mutation.target);
-          sizeWivTree(wiv);
+          sizeWivTree(mutation.target);
         }
       });
     });
