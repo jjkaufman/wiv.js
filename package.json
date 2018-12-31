@@ -2,9 +2,13 @@
   "name": "wiv.js",
   "version": "0.0.1",
   "description": "A library for a more wiggly div",
-  "main": "wiv.js",
+  "main": "dist/wiv.cjs.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "clean": "rm -r dist",
+    "build": "npm run clean && rollup -c",
+    "watch": "rollup -c -w",
+    "prepare": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -24,5 +28,11 @@
   "bugs": {
     "url": "https://github.com/jjkaufman/wiv.js/issues"
   },
-  "homepage": "https://github.com/jjkaufman/wiv.js#readme"
+  "homepage": "https://github.com/jjkaufman/wiv.js#readme",
+  "devDependencies": {
+    "rollup": "^1.0.0"
+  },
+  "files": [
+    "dist"
+  ]
 }
