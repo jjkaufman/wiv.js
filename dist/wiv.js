@@ -28,45 +28,82 @@
 
     function initWiv(wiv) {
       //style wiv elements
+      wiv.meta = {};
       wiv.style.display = "inline-block";
-      wiv.style.borderRadius = parseFloat(wiv.dataset.wivHeight) + "px";
-      wiv.children[0].style.padding = (parseFloat(wiv.dataset.wivHeight) * 4) + "px";
+      let wivContent = document.createElement('div');
+      wivContent.className = 'wiv-content';
+      while (wiv.firstChild) {
+        wivContent.appendChild(wiv.firstChild);
+      }
+      wiv.meta.content = wivContent;
+      wiv.appendChild(wivContent);
 
       //insert wiv canvas element
       let canvas = document.createElement('canvas');
       canvas.id = "wiv-curves-" + wivCounter++;
       canvas.className = "wiv-curves";
-      canvas.width = wiv.offsetWidth;
-      canvas.height = wiv.offsetHeight;
       canvas.style.zIndex = 16;
       canvas.style.position = "absolute";
       canvas.style.pointerEvents = "none";
-      wiv.insertBefore(canvas, wiv.firstChild);
+      wiv.meta.canvas = canvas;
+      wiv.insertBefore(canvas, wivContent);
 
-
-      let color = wiv.dataset.wivColor !== undefined ? wiv.dataset.wivColor : "#FF0000";
-      let speed = speeds[wiv.dataset.wivSpeed] || parseFloat(wiv.dataset.wivSpeed) || speeds.standard;
-      let height = parseFloat(wiv.dataset.wivHeight);
-      let tightness = parseFloat(wiv.dataset.wivTightness);
-      let thickness = parseFloat(wiv.dataset.wivThickness);
-      let increment = validatePositiveInteger(wiv.dataset.wivCompressionFactor);
-      increment *= globalCompressionFactor;
+      sizeWiv(wiv);
 
       let ctx = canvas.getContext("2d");
-      ctx.strokeStyle = color;
-      ctx.lineWidth = thickness;
 
       cache[canvas.id] = {
+        'context': ctx,
+        'count': 0
+      };
+      cacheAttributes(canvas.id, wiv);
+      ctx.strokeStyle = cache[canvas.id].color;
+      ctx.lineWidth = cache[canvas.id].thickness;
+
+      let observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          if (mutation.type == "attributes") {
+            cacheAttributes(canvas.id, mutation.target);
+            sizeWivTree(mutation.target);
+          }
+        });
+      });
+      observer.observe(wiv, {
+        attributes: true
+      });
+    }
+
+    function sizeWiv(wiv) {
+      wiv.meta.content.style.padding = (parseFloat(wiv.dataset.wivHeight) * 4) + "px";
+      wiv.meta.canvas.width = wiv.offsetWidth;
+      wiv.meta.canvas.height = wiv.offsetHeight;
+    }
+
+    function sizeWivTree(elem) {
+      do {
+        if (elem.classList.contains('wiv')) {
+          sizeWiv(elem);
+        }
+      } while (elem = elem.parentElement);
+    }
+
+    function cacheAttributes(cacheId, elem) {
+      let color = elem.dataset.wivColor != undefined ? elem.dataset.wivColor : "#FF0000";
+      let speed = speeds[elem.dataset.wivSpeed] || parseFloat(elem.dataset.wivSpeed) || speeds.standard;
+      let height = parseFloat(elem.dataset.wivHeight);
+      let tightness = parseFloat(elem.dataset.wivTightness);
+      let thickness = parseFloat(elem.dataset.wivThickness);
+      let increment = validatePositiveInteger(elem.dataset.wivCompressionFactor);
+      increment *= globalCompressionFactor;
+
+      cache[cacheId] = Object.assign(cache[cacheId], {
         'speed': speed,
         'height': height,
         'tightness': tightness,
         'thickness': thickness,
-        'increment': increment,
         'color': color,
-        'context': ctx,
-        'count': 0
-      };
-
+        'increment': increment
+      });
     }
 
     /**
