@@ -151,45 +151,160 @@ function wiv(params) {
     ctx.beginPath();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    let x = height * 2 + thickness
-    let y = height - Math.sin(((x - frame) * tightness) * Math.PI / 180) * height + thickness;
-
     //range of the sin function will be [-1 -> 1] * height. Since the logic will never want negative values for y (or clipping), it must have a vertical offset that takes all parameters into account
     let offset = height + Math.max(thickness, imageMode ? imageSize : 0)
 
+    //let x = height * 2 + thickness
+    //let y = height - Math.sin(((x - frame) * tightness) * Math.PI / 180) * height + thickness;
+
+    function calculateTopYValue(x) {
+      return offset + (Math.sin(((x - frame) * tightness) * Math.PI / 180) * height);
+    }
+
+    function calculateRightXValue(y) {
+      return (canvas.width - offset) - (Math.cos(((y - frame) * tightness) * Math.PI / 180) * height);
+    }
+
+    function calculateBottomYValue(x) {
+      return (canvas.height - offset) + (Math.sin(((x - frame) * tightness) * Math.PI / 180) * height);
+    }
+
+    function calculateLeftXValue(y) {
+      return offset + Math.cos(((y - frame) * tightness) * Math.PI / 180) * height;
+    }
+
+    function findTopLeftIntersection() {
+      let last = null;
+      for (let topX = height * 3; topX >= 0; topX--) {
+        let topY = calculateTopYValue(topX);
+        let leftX = calculateLeftXValue(topY);
+        let current = {
+          x: Math.round(topX), 
+          y: Math.round(topY)
+        }
+        if (leftX >= topX) {
+          if (last) {
+            return last;
+          } else {
+            return current;
+          }
+        }
+        last = current;
+      }
+      return {
+        x: 0,
+        y: calculateTopYValue(0)
+      }
+    }
+
+    function findTopRightIntersection() {
+      let last = null;
+      for (let topX = canvas.width - (height * 3); topX <= canvas.width; topX++) {
+        let topY = calculateTopYValue(topX);
+        let rightX = calculateRightXValue(topY);
+        let current = {
+          x: Math.round(topX), 
+          y: Math.round(topY)
+        }
+        if (rightX <= topX) {
+          if (last) {
+            return last;
+          } else {
+            return current;
+          }
+        }
+        last = current;
+      }
+      return {
+        x: canvas.width,
+        y: calculateTopYValue(canvas.width)
+      }
+    }
+
+    function findBottomRightIntersection() {
+      let last = null;
+      for (let bottomX = canvas.width - (height * 3); bottomX <= canvas.width; bottomX++) {
+        let bottomY = calculateBottomYValue(bottomX);
+        let rightX = calculateRightXValue(bottomY);
+        let current = {
+          x: Math.round(bottomX), 
+          y: Math.round(bottomY)
+        }
+        if (rightX <= bottomX) {
+          if (last) {
+            return last;
+          } else {
+            return current;
+          }
+        }
+        last = current;
+      }
+      return {
+        x: canvas.width,
+        y: calculateBottomYValue(canvas.width)
+      }
+    }
+
+    function findBottomLeftIntersection() {
+      let last = null;
+      for (let bottomX = height * 3; bottomX >= 0; bottomX--) {
+        let bottomY = calculateBottomYValue(bottomX);
+        let leftX = calculateLeftXValue(bottomY);
+        let current = {
+          x: Math.round(bottomX), 
+          y: Math.round(bottomY)
+        }
+        if (leftX >= bottomX) {
+          if (last) {
+            return last;
+          } else {
+            return current;
+          }
+        }
+        last = current;
+      }
+      return {
+        x: 0,
+        y: calculateBottomYValue(0)
+      }
+    }
+
+    let topLeft = findTopLeftIntersection();
+    let topRight = findTopRightIntersection();
+    let bottomRight = findBottomRightIntersection();
+    let bottomLeft = findBottomLeftIntersection();
+
+    let x, y;
+
     //draw top
-    for (x = height * 3; x <= canvas.width - (height * 3); x += increment) {
-      y =  offset + (Math.sin(((x - frame) * tightness) * Math.PI / 180) * height);
+    for (x = topLeft.x; x <= topRight.x; x += increment) {
+      y = calculateTopYValue(x);
       imageMode && Math.floor(x % imageFrequency) == 0 && ctx.drawImage(canvasImage, x, y , imageSize, imageSize);
       ctx.lineTo(x, y);
     }
 
     //draw right
-    for (; y <= canvas.height - (height * 3); y += increment) {
-      x = (canvas.width - offset) - (Math.cos(((y - frame) * tightness) * Math.PI / 180) * height);
+    for (; y <= bottomRight.y; y += increment) {
+      x = calculateRightXValue(y);
       imageMode &&  Math.floor(y % imageFrequency) == 0 && ctx.drawImage(canvasImage, x , y , imageSize, imageSize);
       ctx.lineTo(x, y);
     }
 
     //draw bottom
-    for (; x >= (height * 3); x -= increment) {
-      y = (canvas.height - offset) + (Math.sin(((x - frame) * tightness) * Math.PI / 180) * height);
+    for (; x >= bottomLeft.x; x -= increment) {
+      y = calculateBottomYValue(x);
       imageMode && Math.floor(x % imageFrequency) == 0 && ctx.drawImage(canvasImage, x, y  , imageSize, imageSize);
       ctx.lineTo(x, y);
     }
 
     //draw left
-    for (; y >= (height * 2) + thickness; y -= increment) {
-      x = offset + Math.cos(((y - frame) * tightness) * Math.PI / 180) * height;
+    for (; y >= topLeft.y; y -= increment) {
+      x = calculateLeftXValue(y);
       imageMode && Math.floor(y % imageFrequency) == 0 && ctx.drawImage(canvasImage, x , y , imageSize, imageSize);
       ctx.lineTo(x, y);
     }
 
-    //draw top
-    for (; x <= (height * 3) + increment; x += increment) {
-      y = offset + (Math.sin(((x - frame) * tightness) * Math.PI / 180) * height);
-      ctx.lineTo(x, y);
-    }
+    ctx.lineTo(topLeft.x, topLeft.y);
 
     //pull color from dataset
     ctx.strokeStyle = color
