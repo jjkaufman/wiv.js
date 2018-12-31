@@ -116,7 +116,7 @@ function wiv(params) {
 
     //range of the sin function will be [-1 -> 1] * height. Since the logic will never want negative values for y (or clipping), it must have a vertical offset that takes all parameters into account
     let offset = height + Math.max(thickness, imageMode ? imageSize : 0)
-    
+
     //draw top
     for (x = height * 3; x <= canvas.width - (height * 3); x += increment) {
       y =  offset + (Math.sin(((x - frame) * tightness) * Math.PI / 180) * height);
@@ -147,7 +147,7 @@ function wiv(params) {
 
     //draw top
     for (; x <= (height * 3) + increment; x += increment) {
-      y = (Math.sin(((x - frame) * tightness) * Math.PI / 180) * height) + offset ;
+      y = offset + (Math.sin(((x - frame) * tightness) * Math.PI / 180) * height);
       ctx.lineTo(x, y);
     }
 
