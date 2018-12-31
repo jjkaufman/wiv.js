@@ -68,11 +68,11 @@ function wiv(params) {
    */
   function initWivs() {
     let wivs = document.getElementsByClassName("wiv");
-    for (i = wivs.length - 1; i >= 0; i--) {
+    for (let i = wivs.length - 1; i >= 0; i--) {
       initWiv(wivs[i]);
     }
     // reset the previous' wiv canvas size for responsive views
-    for (i = 0; i < wivs.length; i++) {
+    for (let i = 0; i < wivs.length; i++) {
       let canvas = document.getElementsByTagName("canvas")[i];
       canvas.height = wivs[i].offsetHeight;
       canvas.width = wivs[i].offsetWidth;
@@ -168,8 +168,9 @@ function wiv(params) {
 
   return {
     initWivs,
-    drawLines
+    drawLines,
+    defaultSpeeds: speeds,
   }
 }
 
-// export { wiv }
+export { wiv }
