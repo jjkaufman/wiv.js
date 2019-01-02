@@ -169,11 +169,11 @@
       }
 
       function calculateBottomYValue(x) {
-        return (canvas.height - offset) + (Math.sin(((x + frame) * tightness) * Math.PI / 180) * height);
+        return (canvas.height - offset) + (Math.sin(((x - frame) * tightness) * Math.PI / 180) * height);
       }
 
       function calculateLeftXValue(y) {
-        return offset + (Math.cos(((y + frame) * tightness) * Math.PI / 180) * height);
+        return offset + (Math.cos(((y - frame) * tightness) * Math.PI / 180) * height);
       }
 
       function findIntersection(start, end, firstFunc, secondFunc, trim = 2) {
