@@ -20,6 +20,45 @@ function wiv(params) {
     "turbo": 6.15
   }
 
+  const directions = {
+    "default": {
+      "top": -1,
+      "right": -1,
+      "bottom": -1,
+      "left": -1
+    },
+    "reverse": {
+      "top": 1,
+      "right": 1,
+      "bottom": 1,
+      "left": 1
+    },
+    "diverging": {
+      "top": -1,
+      "right": 1,
+      "bottom": 1,
+      "left": -1
+    },
+    "converging": {
+      "top": 1,
+      "right": -1,
+      "bottom": -1,
+      "left": 1
+    },
+    "clockwise": {
+      "top": -1,
+      "right": -1,
+      "bottom": 1,
+      "left": 1
+    },
+    "counterClockwise": {
+      "top": 1,
+      "right": 1,
+      "bottom": -1,
+      "left": -1
+    }
+  }
+
   function initWiv(wiv) {
     // style wiv elements
     wiv.meta = {};
@@ -85,6 +124,7 @@ function wiv(params) {
   function cacheAttributes(cacheId, elem) {
     let color = elem.dataset.wivColor != undefined ? elem.dataset.wivColor : "#FF0000";
     let speed = speeds[elem.dataset.wivSpeed] || parseFloat(elem.dataset.wivSpeed) || speeds.standard;
+    let direction = directions[elem.dataset.wivDirection] || directions.default;
     let height = parseFloat(elem.dataset.wivHeight);
     let tightness = parseFloat(elem.dataset.wivTightness);
     let thickness = parseFloat(elem.dataset.wivThickness);
@@ -96,6 +136,7 @@ function wiv(params) {
 
     cache[cacheId] = Object.assign(cache[cacheId], {
       'speed': speed,
+      'direction': direction,
       'height': height,
       'tightness': tightness,
       'thickness': thickness,
@@ -137,7 +178,7 @@ function wiv(params) {
   /**
    * Represents the logic to draw a single frame. Animates all wivs
    */
-  function drawLines(canvas, {speed, height, tightness, thickness, increment, frame, color, image, imageSize, imageFrequency, ctx}={}) {
+  function drawLines(canvas, {speed, direction, height, tightness, thickness, increment, frame, color, image, imageSize, imageFrequency, ctx}={}) {
     var canvasImage = null;
     let imageMode = image !== undefined;
     if(imageMode){
@@ -155,19 +196,19 @@ function wiv(params) {
     let offset = height + Math.max(thickness, imageMode ? imageSize : 0)
 
     function calculateTopYValue(x) {
-      return offset + (Math.sin(((x - frame) * tightness) * Math.PI / 180) * height);
+      return offset + (Math.sin(((x + (frame * direction.top)) * tightness) * Math.PI / 180) * height);
     }
 
     function calculateRightXValue(y) {
-      return (canvas.width - offset) - (Math.cos(((y - frame) * tightness) * Math.PI / 180) * height);
+      return (canvas.width - offset) - (Math.cos(((y + (frame * direction.right)) * tightness) * Math.PI / 180) * height);
     }
 
     function calculateBottomYValue(x) {
-      return (canvas.height - offset) + (Math.sin(((x + frame) * tightness) * Math.PI / 180) * height);
+      return (canvas.height - offset) + (Math.sin(((x + (frame * direction.bottom)) * tightness) * Math.PI / 180) * height);
     }
 
     function calculateLeftXValue(y) {
-      return offset + (Math.cos(((y + frame) * tightness) * Math.PI / 180) * height);
+      return offset + (Math.cos(((y + (frame * direction.left)) * tightness) * Math.PI / 180) * height);
     }
 
     function findIntersection(start, end, firstFunc, secondFunc, trim = 2) {
