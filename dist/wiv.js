@@ -27,7 +27,7 @@
     };
 
     function initWiv(wiv) {
-      //style wiv elements
+      // style wiv elements
       wiv.meta = {};
       wiv.style.display = "inline-block";
       let wivContent = document.createElement('div');
@@ -38,7 +38,7 @@
       wiv.meta.content = wivContent;
       wiv.appendChild(wivContent);
 
-      //insert wiv canvas element
+      // insert wiv canvas element
       let canvas = document.createElement('canvas');
       canvas.id = "wiv-curves-" + wivCounter++;
       canvas.className = "wiv-curves";
@@ -141,9 +141,9 @@
     }
 
     /**
-    Represents the logic to draw a single frame. Animates all wivs
-    */
-   function drawLines(canvas, {speed, height, tightness, thickness, increment, frame, color, image, imageSize, imageFrequency, ctx}={}) {
+     * Represents the logic to draw a single frame. Animates all wivs
+     */
+    function drawLines(canvas, {speed, height, tightness, thickness, increment, frame, color, image, imageSize, imageFrequency, ctx}={}) {
       var canvasImage = null;
       let imageMode = image !== undefined;
       if(imageMode){
@@ -157,54 +157,89 @@
       ctx.beginPath();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      let x = height * 2 + thickness;
-      let y = height - Math.sin(((x - frame) * tightness) * Math.PI / 180) * height + thickness;
-
-      //range of the sin function will be [-1 -> 1] * height. Since the logic will never want negative values for y (or clipping), it must have a vertical offset that takes all parameters into account
+      // range of the sin function will be [-1 -> 1] * height. Since the logic will never want negative values for y (or clipping), it must have a vertical offset that takes all parameters into account
       let offset = height + Math.max(thickness, imageMode ? imageSize : 0);
 
-      //draw top
-      for (x = height * 3; x <= canvas.width - (height * 3); x += increment) {
-        y =  offset + (Math.sin(((x - frame) * tightness) * Math.PI / 180) * height);
+      function calculateTopYValue(x) {
+        return offset + (Math.sin(((x - frame) * tightness) * Math.PI / 180) * height);
+      }
+
+      function calculateRightXValue(y) {
+        return (canvas.width - offset) - (Math.cos(((y - frame) * tightness) * Math.PI / 180) * height);
+      }
+
+      function calculateBottomYValue(x) {
+        return (canvas.height - offset) + (Math.sin(((x - frame) * tightness) * Math.PI / 180) * height);
+      }
+
+      function calculateLeftXValue(y) {
+        return offset + (Math.cos(((y - frame) * tightness) * Math.PI / 180) * height);
+      }
+
+      function findIntersection(start, end, firstFunc, secondFunc, trim = 2) {
+        let reverse = (end < start);
+        let coordList = [];
+        for (let x = start; (reverse && x >= end) || (!reverse && x <= end); x += reverse ? -1 : 1) {
+          let y = firstFunc(x);
+          let newX = secondFunc(y);
+          coordList.unshift({
+            x: x,
+            y: y
+          });
+          coordList = coordList.slice(0, trim);
+          if ((reverse && newX >= x) || (!reverse && newX <= x)) {
+            return coordList.pop();
+          }
+        }
+        return coordList.pop();
+      }
+
+      let topLeft = findIntersection(height * 4, 0, calculateTopYValue, calculateLeftXValue);
+      let topRight = findIntersection(canvas.width - height * 4, canvas.width, calculateTopYValue, calculateRightXValue);
+      let bottomRight = findIntersection(canvas.width - height * 4, canvas.width, calculateBottomYValue, calculateRightXValue);
+      let bottomLeft = findIntersection(height * 4, 0, calculateBottomYValue, calculateLeftXValue);
+
+      let x, y;
+
+      // draw top
+      for (x = topLeft.x; x <= topRight.x; x += increment) {
+        y = calculateTopYValue(x);
         imageMode && Math.floor(x % imageFrequency) == 0 && ctx.drawImage(canvasImage, x, y , imageSize, imageSize);
         ctx.lineTo(x, y);
       }
 
-      //draw right
-      for (; y <= canvas.height - (height * 3); y += increment) {
-        x = (canvas.width - offset) - (Math.cos(((y - frame) * tightness) * Math.PI / 180) * height);
+      // draw right
+      for (; y <= bottomRight.y; y += increment) {
+        x = calculateRightXValue(y);
         imageMode &&  Math.floor(y % imageFrequency) == 0 && ctx.drawImage(canvasImage, x , y , imageSize, imageSize);
         ctx.lineTo(x, y);
       }
 
-      //draw bottom
-      for (; x >= (height * 3); x -= increment) {
-        y = (canvas.height - offset) + (Math.sin(((x - frame) * tightness) * Math.PI / 180) * height);
+      // draw bottom
+      for (; x >= bottomLeft.x; x -= increment) {
+        y = calculateBottomYValue(x);
         imageMode && Math.floor(x % imageFrequency) == 0 && ctx.drawImage(canvasImage, x, y  , imageSize, imageSize);
         ctx.lineTo(x, y);
       }
 
-      //draw left
-      for (; y >= (height * 2) + thickness; y -= increment) {
-        x = offset + Math.cos(((y - frame) * tightness) * Math.PI / 180) * height;
+      // draw left
+      for (; y >= topLeft.y; y -= increment) {
+        x = calculateLeftXValue(y);
         imageMode && Math.floor(y % imageFrequency) == 0 && ctx.drawImage(canvasImage, x , y , imageSize, imageSize);
         ctx.lineTo(x, y);
       }
 
-      //draw top
-      for (; x <= (height * 3) + increment; x += increment) {
-        y = offset + (Math.sin(((x - frame) * tightness) * Math.PI / 180) * height);
-        ctx.lineTo(x, y);
-      }
+      // complete connection
+      ctx.lineTo(topLeft.x, topLeft.y);
 
-      //pull color from dataset
+      // pull color from dataset
       ctx.strokeStyle = color;
       ctx.lineWidth = thickness;
       if(thickness != 0 ){
         ctx.stroke();
       }
 
-      //current frame is tracked on per wiv basis. This is to help with speed calculations
+      // current frame is tracked on per wiv basis. This is to help with speed calculations
       if (frame > 100000) {
         frame = 0;
       }
