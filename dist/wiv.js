@@ -175,7 +175,8 @@
 
       for (let wivCurve of wivCurves) {
         let curveCache = cache[wivCurve.id];
-        curveCache.frame = drawLines(wivCurve, curveCache);
+        let drawResult = drawLines(wivCurve, curveCache);
+        curveCache.frame = drawResult.frame;
       }
       // reanimate
       window.requestAnimationFrame(processWivs);
@@ -220,26 +221,53 @@
       function findIntersection(start, end, firstFunc, secondFunc, trim = 2) {
         let reverse = (end < start);
         let coordList = [];
+        let matches = [];
         for (let x = start; (reverse && x >= end) || (!reverse && x <= end); x += reverse ? -1 : 1) {
           let y = firstFunc(x);
           let newX = secondFunc(y);
+            
           coordList.unshift({
             x: x,
             y: y
           });
           coordList = coordList.slice(0, trim);
           if ((reverse && newX >= x) || (!reverse && newX <= x)) {
-            return coordList.pop();
+             return coordList.pop();
           }
         }
-        return coordList.pop();
+        if(oldIntersection === undefined){
+          return matches.pop();
+        }
       }
+      let isExtreme = tightness * height > 30;
+      var topLeft;
+      var topRight;
+      var bottomLeft;
+      var bottomRight;
 
-      let topLeft = findIntersection(height * 4, 0, calculateTopYValue, calculateLeftXValue);
-      let topRight = findIntersection(canvas.width - height * 4, canvas.width, calculateTopYValue, calculateRightXValue);
-      let bottomRight = findIntersection(canvas.width - height * 4, canvas.width, calculateBottomYValue, calculateRightXValue);
-      let bottomLeft = findIntersection(height * 4, 0, calculateBottomYValue, calculateLeftXValue);
-
+      if(isExtreme){
+         topLeft = {
+          x : height * 3,
+          y : (height * 2) + thickness
+        };
+         topRight = {
+          x : canvas.width - (height * 3),
+          y : null 
+        };
+        bottomRight = {
+          x: null, 
+          y: canvas.height - (height * 3)
+        };
+        bottomLeft ={
+          x : (height * 3),
+          y: null
+        };
+      }else{
+       topLeft = findIntersection(height * 4, 0, calculateTopYValue, calculateLeftXValue);
+       topRight = findIntersection(canvas.width - height * 4, canvas.width, calculateTopYValue, calculateRightXValue);
+       bottomRight = findIntersection(canvas.width - height * 4, canvas.width, calculateBottomYValue, calculateRightXValue);
+       bottomLeft = findIntersection(height * 4, 0, calculateBottomYValue, calculateLeftXValue);
+    }
       let x, y;
 
       // draw top
@@ -269,10 +297,16 @@
         imageMode && Math.floor(y % imageFrequency) == 0 && ctx.drawImage(canvasImage, x , y , imageSize, imageSize);
         ctx.lineTo(x, y);
       }
-
+      if(isExtreme){
+      for (; x <= topRight.x; x += increment) {
+        y = calculateTopYValue(x);
+        imageMode && Math.floor(x % imageFrequency) == 0 && ctx.drawImage(canvasImage, x, y , imageSize, imageSize);
+        ctx.lineTo(x, y);
+      }
+    }else{
       // complete connection
       ctx.lineTo(topLeft.x, topLeft.y);
-
+    }
       // pull color from dataset
       ctx.strokeStyle = color;
       ctx.lineWidth = thickness;
@@ -286,7 +320,8 @@
       }
 
       frame = (frame ? frame : 0) + speed;
-      return frame;
+      return {frame};
+
     }
 
     function validatePositiveInteger(value, defaultVal) {
