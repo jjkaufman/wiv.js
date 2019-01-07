@@ -19,6 +19,7 @@
     let wivCounter = 0;
 
     const speeds = {
+      "stationary": 0,
       "slow": .15,
       "standard": .55,
       "fast": 1.55,
@@ -129,7 +130,10 @@
 
     function cacheAttributes(cacheId, elem) {
       let color = elem.dataset.wivColor != undefined ? elem.dataset.wivColor : "#FF0000";
-      let speed = speeds[elem.dataset.wivSpeed] || parseFloat(elem.dataset.wivSpeed) || speeds.standard;
+      let speed = (elem.dataset.wivSpeed in speeds) ? speeds[elem.dataset.wivSpeed] : parseFloat(elem.dataset.wivSpeed);
+      if (isNaN(speed)) {
+        speed = speeds.standard;
+      }
       let direction = directions[elem.dataset.wivDirection] || directions.default;
       let height = parseFloat(elem.dataset.wivHeight);
       let tightness = parseFloat(elem.dataset.wivTightness);
