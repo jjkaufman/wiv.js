@@ -139,6 +139,7 @@
       let image = elem.dataset.wivImage;
       let imageSize = elem.dataset.wivImageSize;
       let imageFrequency = elem.dataset.wivImageFrequency;
+      let selector = elem.dataset.wivCssMatch;
 
       cache[cacheId] = Object.assign(cache[cacheId], {
         'speed': speed,
@@ -150,7 +151,8 @@
         'image': image,
         'imageSize': imageSize || height ,
         'imageFrequency': imageFrequency || tightness * 2,
-        'increment': increment
+        'increment': increment,
+        'selector': selector
       });
     }
     /**
@@ -184,19 +186,27 @@
     /**
      * Represents the logic to draw a single frame. Animates all wivs
      */
-    function drawLines(canvas, {speed, direction, height, tightness, thickness, increment, frame, color, image, imageSize, imageFrequency, ctx}={}) {
-      var canvasImage = null;
+    function drawLines(canvas, {speed, direction, height, tightness, thickness, increment, frame, color, image, imageSize, imageFrequency, selector, ctx}={}) {
+      if (ctx === null) {
+        ctx = canvas.getContext("2d");
+      }
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (selector) {
+        let wiv = canvas.parentElement;
+        if (!wiv.matches(selector)) {
+          return;
+        }
+      }
+
+      ctx.beginPath();
+
+      let canvasImage = null;
       let imageMode = image !== undefined;
       if(imageMode){
         canvasImage = new Image();
         canvasImage.src = image;
       }
-
-      if (ctx === null) {
-        ctx = canvas.getContext("2d");
-      }
-      ctx.beginPath();
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // range of the sin function will be [-1 -> 1] * height. Since the logic will never want negative values for y (or clipping), it must have a vertical offset that takes all parameters into account
       let offset = height + Math.max(thickness, imageMode ? imageSize : 0);
@@ -241,6 +251,7 @@
       let bottomLeft = findIntersection(height * 4, 0, calculateBottomYValue, calculateLeftXValue);
 
       let x, y;
+      let thicknessPadding = (thickness / 4);
 
       // draw top
       for (x = topLeft.x; x <= topRight.x; x += increment) {
@@ -250,14 +261,14 @@
       }
 
       // draw right
-      for (; y <= bottomRight.y; y += increment) {
+      for (; y <= bottomRight.y - thicknessPadding; y += increment) {
         x = calculateRightXValue(y);
         imageMode &&  Math.floor(y % imageFrequency) == 0 && ctx.drawImage(canvasImage, x , y , imageSize, imageSize);
         ctx.lineTo(x, y);
       }
 
       // draw bottom
-      for (; x >= bottomLeft.x; x -= increment) {
+      for (; x >= bottomLeft.x + thicknessPadding; x -= increment) {
         y = calculateBottomYValue(x);
         imageMode && Math.floor(x % imageFrequency) == 0 && ctx.drawImage(canvasImage, x, y  , imageSize, imageSize);
         ctx.lineTo(x, y);
@@ -269,9 +280,8 @@
         imageMode && Math.floor(y % imageFrequency) == 0 && ctx.drawImage(canvasImage, x , y , imageSize, imageSize);
         ctx.lineTo(x, y);
       }
-
       // complete connection
-      ctx.lineTo(topLeft.x, topLeft.y);
+      ctx.closePath();
 
       // pull color from dataset
       ctx.strokeStyle = color;
