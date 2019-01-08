@@ -111,6 +111,20 @@
           <br>
           <div class="wiv sectionHeader" data-wiv-speed=".55" data-wiv-height="5" data-wiv-tightness="6" data-wiv-thickness="2"
             data-wiv-color="#FFFF00">
+            <b>Turn Wiggles on and off</b>
+          </div>
+          <br>
+          <div class="wiv" data-wiv-height="5" data-wiv-tightness="6" data-wiv-thickness="2"
+            data-wiv-color="#FFFF00" data-wiv-css-match=":hover">
+            On Hover
+          </div>
+          <div class="wiv clickwiv" data-wiv-height="5" data-wiv-tightness="6" data-wiv-thickness="2"
+            data-wiv-color="#FFFF00" data-wiv-css-match=".active" style="cursor: pointer">
+            On Click
+          </div>
+          <br>
+          <div class="wiv sectionHeader" data-wiv-speed=".55" data-wiv-height="5" data-wiv-tightness="6" data-wiv-thickness="2"
+            data-wiv-color="#FFFF00">
             <b>Control Height</b>
           </div>
           <br>
@@ -145,6 +159,15 @@
     //initial wivs and call initial frame render
     let w = wiv.wiv();
     w.initWivs();
+  </script>
+  <script>
+    // one-off scripts to demonstrate features
+    let clickWivs = document.getElementsByClassName("clickwiv");
+    for (let clickWiv of clickWivs) {
+      clickWiv.addEventListener("click", function (e) {
+        clickWiv.classList.toggle("active");
+      })
+    }
   </script>
 </body>
 </html>

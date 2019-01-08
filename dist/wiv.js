@@ -143,6 +143,7 @@
       let image = elem.dataset.wivImage;
       let imageSize = elem.dataset.wivImageSize;
       let imageFrequency = elem.dataset.wivImageFrequency;
+      let selector = elem.dataset.wivCssMatch;
 
       cache[cacheId] = Object.assign(cache[cacheId], {
         'speed': speed,
@@ -154,7 +155,8 @@
         'image': image,
         'imageSize': imageSize || height ,
         'imageFrequency': imageFrequency || tightness * 2,
-        'increment': increment
+        'increment': increment,
+        'selector': selector
       });
     }
     /**
@@ -188,19 +190,27 @@
     /**
      * Represents the logic to draw a single frame. Animates all wivs
      */
-    function drawLines(canvas, {speed, direction, height, tightness, thickness, increment, frame, color, image, imageSize, imageFrequency, ctx}={}) {
-      var canvasImage = null;
+    function drawLines(canvas, {speed, direction, height, tightness, thickness, increment, frame, color, image, imageSize, imageFrequency, selector, ctx}={}) {
+      if (ctx === null) {
+        ctx = canvas.getContext("2d");
+      }
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (selector) {
+        let wiv = canvas.parentElement;
+        if (!wiv.matches(selector)) {
+          return;
+        }
+      }
+
+      ctx.beginPath();
+
+      let canvasImage = null;
       let imageMode = image !== undefined;
       if(imageMode){
         canvasImage = new Image();
         canvasImage.src = image;
       }
-
-      if (ctx === null) {
-        ctx = canvas.getContext("2d");
-      }
-      ctx.beginPath();
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // range of the sin function will be [-1 -> 1] * height. Since the logic will never want negative values for y (or clipping), it must have a vertical offset that takes all parameters into account
       let offset = height + Math.max(thickness, imageMode ? imageSize : 0);
