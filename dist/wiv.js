@@ -241,6 +241,7 @@
       let bottomLeft = findIntersection(height * 4, 0, calculateBottomYValue, calculateLeftXValue);
 
       let x, y;
+      let thicknessPadding = (thickness / 4);
 
       // draw top
       for (x = topLeft.x; x <= topRight.x; x += increment) {
@@ -250,14 +251,14 @@
       }
 
       // draw right
-      for (; y <= bottomRight.y; y += increment) {
+      for (; y <= bottomRight.y - thicknessPadding; y += increment) {
         x = calculateRightXValue(y);
         imageMode &&  Math.floor(y % imageFrequency) == 0 && ctx.drawImage(canvasImage, x , y , imageSize, imageSize);
         ctx.lineTo(x, y);
       }
 
       // draw bottom
-      for (; x >= bottomLeft.x; x -= increment) {
+      for (; x >= bottomLeft.x + thicknessPadding; x -= increment) {
         y = calculateBottomYValue(x);
         imageMode && Math.floor(x % imageFrequency) == 0 && ctx.drawImage(canvasImage, x, y  , imageSize, imageSize);
         ctx.lineTo(x, y);
@@ -269,9 +270,8 @@
         imageMode && Math.floor(y % imageFrequency) == 0 && ctx.drawImage(canvasImage, x , y , imageSize, imageSize);
         ctx.lineTo(x, y);
       }
-
       // complete connection
-      ctx.lineTo(topLeft.x, topLeft.y);
+      ctx.closePath();
 
       // pull color from dataset
       ctx.strokeStyle = color;
