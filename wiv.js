@@ -111,7 +111,7 @@ function wiv(params) {
 
   function sizeWiv(wiv) {
     let imageSize = parseFloat(wiv.dataset.wivImageSize) || 0;
-    wiv.meta.content.style.padding = imageSize + (parseFloat(wiv.dataset.wivHeight) * 4) + (parseFloat(wiv.dataset.wivThickness)) + "px";
+    wiv.meta.content.style.padding = imageSize + (parseFloat(wiv.dataset.wivHeight) * 4) + "px";
     wiv.meta.canvas.width = wiv.offsetWidth;
     wiv.meta.canvas.height = wiv.offsetHeight;
   }
