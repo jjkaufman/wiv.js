@@ -98,9 +98,19 @@
         'ctx': ctx,
         'frame': 0
       };
+
       cacheAttributes(canvas.id, wiv);
       ctx.strokeStyle = cache[canvas.id].color;
       ctx.lineWidth = cache[canvas.id].thickness;
+
+      // Increment the frame 60 times per second so if the browser has
+      // an FPS below 60 the apparent wiv speed will still be consistent
+      setInterval(() => {
+        if (cache[canvas.id].frame > 100000) {
+          cache[canvas.id].frame = 0;
+        }
+        cache[canvas.id].frame += cache[canvas.id].speed;
+      }, 17);
 
       let observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
@@ -185,7 +195,7 @@
 
       for (let wivCurve of wivCurves) {
         let curveCache = cache[wivCurve.id];
-        curveCache.frame = drawLines(wivCurve, curveCache);
+        drawLines(wivCurve, curveCache);
       }
       // reanimate
       window.requestAnimationFrame(processWivs);
@@ -301,14 +311,6 @@
           ctx.fill();
         }
       }
-
-      // current frame is tracked on per wiv basis. This is to help with speed calculations
-      if (frame > 100000) {
-        frame = 0;
-      }
-
-      frame = (frame ? frame : 0) + speed;
-      return frame;
     }
 
     function validatePositiveInteger(value, defaultVal) {
